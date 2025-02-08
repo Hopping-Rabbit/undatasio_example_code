@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>UnDatasIO Demo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
+    <script src="https://unpkg.com/thebe@latest/lib/index.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        #activate-button {
+            margin: 20px 0;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .code-cell {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+
+        .thebelab-cell {
+            position: relative;
+            border: 1px solid #ddd;
+            margin: 10px 0;
+            padding: 10px;
+        }
+
+        .thebelab-cell-input {
+            background: #f7f7f7;
+            padding: 10px;
+        }
+
+        .thebelab-cell-output {
+            padding: 10px;
+            background: #fff;
+        }
+
+        .thebelab-button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            background: #4CAF50;
+            color: white;
+            cursor: pointer;
+            margin: 4px;
+        }
+
+        .thebelab-button:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>UnDatasIO Demo</h1>
+
+    <button id="activate-button">连接 Python 环境</button>
+    <div id="status"></div>
+
+    <!-- 添加一个测试单元格 -->
+    <div class="code-cell">
+        <pre data-executable="true" data-language="python">
+# 测试 UnDatasIO 是否正确安装
+import undatasio
+print("UnDatasIO version:", undatasio.__version__)
+        </pre>
+    </div>
+
+    <!-- 主要代码单元格 -->
+    <div class="code-cell">
+        <pre data-executable="true" data-language="python">
+from undatasio import UnDatasIO
+from undatasio.utils import ListField, StringField, DictField
+
+undatasio_obj = UnDatasIO(token='a095d786ffe4459493e2e7aa51886d29', task_name='demo')
+list_field = ListField(
+    name='skills',
+    rule='Obtain a list of all technology stacks'
+)
+str_field = StringField(
+    name='postbox',
+    rule='A typical email address'
+)
+sx_date_field = StringField(
+    name='internship duration',
+    rule='The time period of this internship at the company'
+)
+dict_field = DictField(
+    name='internship experience',
+    rule='An internship experience at a company',
+    keys=[sx_date_field]
+)
+
+field_list = [list_field, str_field, dict_field]
+data = undatasio_obj.get_structured_data('v1', 'resume-example.pdf',  400, 100, field_list)
+print(data.code)
+print(data.msg)
+print(data.data)
+        </pre>
+    </div>
+
+    <script>
+        window.addEventListener('load', () => {
+            thebeConfig = {
+                binderOptions: {
+                    repo: "Hopping-Rabbit/undatasio_example_code",
+                    ref: "main",
+                },
+                kernelOptions: {
+                    name: "python3",
+                },
+                binderUrl: "https://mybinder.org"
+            }
+
+            function updateStatus(message, isError = false) {
+                const status = document.getElementById('status');
+                status.textContent = message;
+                status.style.backgroundColor = isError ? '#ffebee' : '#e8f5e9';
+                status.style.color = isError ? '#c62828' : '#2e7d32';
+            }
+
+            document.getElementById('activate-button').addEventListener('click', () => {
+                updateStatus("正在连接到 Python 环境，请稍候...");
+
+                if (typeof thebelab === 'undefined') {
+                    updateStatus("Thebe 未正确加载，请刷新页面重试", true);
+                    return;
+                }
+
+                thebelab.bootstrap().then(() => {
+                    updateStatus("Python 环境已就绪！");
+                }).catch(err => {
+                    updateStatus("连接失败：" + err.message, true);
+                    console.error(err);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
